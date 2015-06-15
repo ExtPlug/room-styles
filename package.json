@@ -1,0 +1,9 @@
+{ "name": "extplug-room-styles"
+, "version": "1.0.0"
+, "description": "ExtPlug plugin that allows room hosts to define their own custom room CSS styles."
+, "devDependencies":
+  { "gulp": "^3.8.11"
+  , "gulp-babel": "^5.1.0"
+  , "requirejs": "^2.1.17" }
+, "scripts":
+  { "build": "gulp build" } }
