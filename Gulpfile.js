@@ -1,5 +1,6 @@
 var gulp   = require('gulp')
 var babel  = require('gulp-babel')
+var mkdirp = require('mkdirp')
 var rjs    = require('requirejs')
 var fs     = require('fs')
 
@@ -28,7 +29,10 @@ gulp.task('rjs', [ 'babel' ], function (done) {
     },
     optimize: 'none',
     out: function (text) {
-      fs.writeFile('build/room-styles.js', text, done)
+      mkdirp('build', function (e) {
+        if (e) done(e)
+        else   fs.writeFile('build/room-styles.js', text, done)
+      })
     }
   })
 })
