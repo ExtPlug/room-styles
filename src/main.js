@@ -17,9 +17,6 @@ define(function (require, exports, module) {
 
     init(id, ext) {
       this._super(id, ext);
-      this.colors = this.colors.bind(this);
-      this.css    = this.css.bind(this);
-      this.images = this.images.bind(this);
       this.unload = this.unload.bind(this);
       this.reload = this.reload.bind(this);
     },
@@ -28,13 +25,18 @@ define(function (require, exports, module) {
       this._super();
       this.all();
 
-      this.ext.roomSettings.on('change', this.reload);
+      this.ext.roomSettings.on('change:images', this.images, this);
+      this.ext.roomSettings.on('change:ccc change:colors', this.colors, this);
+      this.ext.roomSettings.on('change:css', this.css, this);
     },
 
     disable() {
       this._super();
       this.unload();
-      this.ext.roomSettings.off('change', this.reload);
+
+      this.ext.roomSettings.off('change:images', this.images);
+      this.ext.roomSettings.off('change:ccc change:colors', this.colors);
+      this.ext.roomSettings.off('change:css', this.css);
     },
 
     reload() {
@@ -55,6 +57,11 @@ define(function (require, exports, module) {
     },
 
     colors() {
+      if (this._colorStyles) {
+        this._colorStyles.remove();
+        this._colorStyles = null;
+      }
+
       // plugCubed
       let colors = this.ext.roomSettings.get('colors');
       // Radiant
@@ -62,7 +69,7 @@ define(function (require, exports, module) {
 
       let chatColors = colors && colors.chat || ccc;
       if (_.isObject(chatColors)) {
-        let colorStyles = this.createStyle();
+        this._colorStyles = new Style();
 
         chatColors = this._normalizeRanks(chatColors);
         ranks.forEach(level => {
@@ -70,7 +77,7 @@ define(function (require, exports, module) {
             let color = chatColors[level];
             if (color[0] !== '#') color = `#${color}`;
             let value = { color: `${color} !important` };
-            colorStyles
+            this._colorStyles
               .set(`.role-${level} .un`, value)
               .set(`.role-${level} .name`, value)
               .set(`#user-rollover.role-${level} .role span`, value)
@@ -81,11 +88,20 @@ define(function (require, exports, module) {
     },
 
     css() {
+      if (this._cssStyles) {
+        this._cssStyles.remove();
+        this._cssStyles = null;
+      }
+      if (this._imports) {
+        this._imports.remove();
+        this._imports = null;
+      }
+
       let css = this.ext.roomSettings.get('css');
       // plugCubed
       if (_.isObject(css)) {
         if (_.isObject(css.rule)) {
-          this.createStyle(css.rule);
+          this._cssStyles = new Style(css.rule);
         }
 
         if (_.isArray(css.import)) {
@@ -101,9 +117,23 @@ define(function (require, exports, module) {
     },
 
     images() {
+      if (this._imageStyles) {
+        this._imageStyles.remove();
+        this._imageStyles = null;
+      }
+      if (this.$booth) {
+        this.$booth.remove();
+        this.$booth = null;
+      }
+      if (this._oldPlayback) {
+        $('#playback .background img').attr('src', this._oldPlayback);
+        this._oldPlayback = null;
+      }
+
       let images = this.ext.roomSettings.get('images');
       if (_.isObject(images)) {
-        let style = this.createStyle();
+        let style = new Style();
+        this._imageStyles = style;
         if (images.background) {
           style.set({
             '.room-background': {
@@ -158,19 +188,30 @@ define(function (require, exports, module) {
     },
 
     unload() {
+      if (this._colorStyles) {
+        this._colorStyles.remove();
+        this._colorStyles = null;
+      }
+      if (this._cssStyles) {
+        this._cssStyles.remove();
+        this._cssStyles = null;
+      }
+      if (this._imageStyles) {
+        this._imageStyles.remove();
+        this._imageStyles = null;
+      }
       if (this.$booth) {
         this.$booth.remove();
         this.$booth = null;
       }
       if (this._oldPlayback) {
         $('#playback .background img').attr('src', this._oldPlayback);
-        delete this._oldPlayback;
+        this._oldPlayback = null;
       }
       if (this._imports) {
         this._imports.remove();
         this._imports = null;
       }
-      this.removeStyles();
     }
 
   });
