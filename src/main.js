@@ -71,10 +71,10 @@ define(function (require, exports, module) {
             if (color[0] !== '#') color = `#${color}`;
             let value = { color: `${color} !important` };
             colorStyles
-              .set(`#chat-messages .icon-chat-${level} ~ .un`, value)
-              .set(`#user-rollover .icon-chat-${level} + span`, value)
-              .set(`#user-lists    .icon-chat-${level} + span`, value)
-              .set(`#waitlist      .icon-chat-${level} + span`, value);
+              .set(`.role-${level} .un`, value)
+              .set(`.role-${level} .name`, value)
+              .set(`#user-rollover.role-${level} .role span`, value)
+              .set(`#app .list.staff .group.${level} span`, value);
           }
         });
       }
@@ -139,9 +139,13 @@ define(function (require, exports, module) {
         ranks.forEach(rank => {
           let url = images[rank] || images.icons && images.icons[rank];
           if (url) {
-            style.set(`.icon.icon-chat-${rank}`, {
-              background: `url(${url})`
-            });
+            let selector = `.icon.icon-chat-${rank}`
+            // special-case cohosts, because they also have the "chat-host" icon
+            // class sometimes
+            if (rank === 'host' || rank === 'cohost') {
+              selector += `, .role-${rank} .icon-chat-host`
+            }
+            style.set(selector, { background: `url(${url})` });
           }
         });
       }
