@@ -16,9 +16,6 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
 
     init: function init(id, ext) {
       this._super(id, ext);
-      this.colors = this.colors.bind(this);
-      this.css = this.css.bind(this);
-      this.images = this.images.bind(this);
       this.unload = this.unload.bind(this);
       this.reload = this.reload.bind(this);
     },
@@ -27,13 +24,19 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
       this._super();
       this.all();
 
-      this.ext.roomSettings.on('change', this.reload);
+      //      this.ext.roomSettings.on('change', this.reload);
+      this.ext.roomSettings.on('change:images', this.images, this);
+      this.ext.roomSettings.on('change:ccc change:colors', this.colors, this);
+      this.ext.roomSettings.on('change:css', this.css, this);
     },
 
     disable: function disable() {
       this._super();
       this.unload();
-      this.ext.roomSettings.off('change', this.reload);
+      //      this.ext.roomSettings.off('change', this.reload);
+      this.ext.roomSettings.off('change:images', this.images);
+      this.ext.roomSettings.off('change:ccc change:colors', this.colors);
+      this.ext.roomSettings.off('change:css', this.css);
     },
 
     reload: function reload() {
@@ -56,6 +59,11 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
     colors: function colors() {
       var _this = this;
 
+      if (this._colorStyles) {
+        this._colorStyles.remove();
+        this._colorStyles = null;
+      }
+
       // plugCubed
       var colors = this.ext.roomSettings.get('colors');
       // Radiant
@@ -63,28 +71,35 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
 
       var chatColors = colors && colors.chat || ccc;
       if (_.isObject(chatColors)) {
-        (function () {
-          var colorStyles = _this.Style();
+        this._colorStyles = new Style();
 
-          chatColors = _this._normalizeRanks(chatColors);
-          ranks.forEach(function (level) {
-            if (chatColors[level]) {
-              var color = chatColors[level];
-              if (color[0] !== '#') color = '#' + color;
-              var value = { color: '' + color + ' !important' };
-              colorStyles.set('#chat-messages .icon-chat-' + level + ' ~ .un', value).set('#user-rollover .icon-chat-' + level + ' + span', value).set('#user-lists    .icon-chat-' + level + ' + span', value).set('#waitlist      .icon-chat-' + level + ' + span', value);
-            }
-          });
-        })();
+        chatColors = this._normalizeRanks(chatColors);
+        ranks.forEach(function (level) {
+          if (chatColors[level]) {
+            var color = chatColors[level];
+            if (color[0] !== '#') color = '#' + color;
+            var value = { color: '' + color + ' !important' };
+            _this._colorStyles.set('.role-' + level + ' .un', value).set('.role-' + level + ' .name', value).set('#user-rollover.role-' + level + ' .role span', value).set('#app .list.staff .group.' + level + ' span', value);
+          }
+        });
       }
     },
 
     css: function css() {
+      if (this._cssStyles) {
+        this._cssStyles.remove();
+        this._cssStyles = null;
+      }
+      if (this._imports) {
+        this._imports.remove();
+        this._imports = null;
+      }
+
       var css = this.ext.roomSettings.get('css');
       // plugCubed
       if (_.isObject(css)) {
         if (_.isObject(css.rule)) {
-          this.Style(css.rule);
+          this._cssStyles = new Style(css.rule);
         }
 
         if (_.isArray(css['import'])) {
@@ -102,10 +117,24 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
     images: function images() {
       var _this2 = this;
 
+      if (this._imageStyles) {
+        this._imageStyles.remove();
+        this._imageStyles = null;
+      }
+      if (this.$booth) {
+        this.$booth.remove();
+        this.$booth = null;
+      }
+      if (this._oldPlayback) {
+        $('#playback .background img').attr('src', this._oldPlayback);
+        this._oldPlayback = null;
+      }
+
       var images = this.ext.roomSettings.get('images');
       if (_.isObject(images)) {
         (function () {
-          var style = _this2.Style();
+          var style = new Style();
+          _this2._imageStyles = style;
           if (images.background) {
             style.set({
               '.room-background': {
@@ -114,7 +143,7 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
             });
           }
           if (images.playback) {
-            var playbackImg = _this2.$('#playback .background img');
+            var playbackImg = $('#playback .background img');
             _this2._oldPlayback = playbackImg.attr('src');
             playbackImg.attr('src', images.playback);
           }
@@ -131,16 +160,20 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
             });
             _this2.$booth = $('<div />')
             // plug³ compatibility
-            .attr('id', 'p3-dj-booth').addClass('extplug-booth').css({ 'background': 'url(' + images.booth + ') no-repeat center center' }).appendTo(_this2.$('#dj-booth'));
+            .attr('id', 'p3-dj-booth').addClass('extplug-booth').css({ 'background': 'url(' + images.booth + ') no-repeat center center' }).appendTo($('#dj-booth'));
           }
 
           images = _this2._normalizeRanks(images);
           ranks.forEach(function (rank) {
             var url = images[rank] || images.icons && images.icons[rank];
             if (url) {
-              style.set('.icon.icon-chat-' + rank, {
-                background: 'url(' + url + ')'
-              });
+              var selector = '.icon.icon-chat-' + rank;
+              // special-case cohosts, because they also have the "chat-host" icon
+              // class sometimes
+              if (rank === 'host' || rank === 'cohost') {
+                selector += ', .role-' + rank + ' .icon-chat-host';
+              }
+              style.set(selector, { background: 'url(' + url + ')' });
             }
           });
         })();
@@ -154,19 +187,30 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
     },
 
     unload: function unload() {
+      if (this._colorStyles) {
+        this._colorStyles.remove();
+        this._colorStyles = null;
+      }
+      if (this._cssStyles) {
+        this._cssStyles.remove();
+        this._cssStyles = null;
+      }
+      if (this._imageStyles) {
+        this._imageStyles.remove();
+        this._imageStyles = null;
+      }
       if (this.$booth) {
         this.$booth.remove();
         this.$booth = null;
       }
       if (this._oldPlayback) {
-        this.$('#playback .background img').attr('src', this._oldPlayback);
-        delete this._oldPlayback;
+        $('#playback .background img').attr('src', this._oldPlayback);
+        this._oldPlayback = null;
       }
       if (this._imports) {
         this._imports.remove();
         this._imports = null;
       }
-      this.removeStyles();
     }
 
   });
