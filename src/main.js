@@ -62,7 +62,7 @@ define(function (require, exports, module) {
 
       let chatColors = colors && colors.chat || ccc;
       if (_.isObject(chatColors)) {
-        let colorStyles = this.Style();
+        let colorStyles = this.createStyle();
 
         chatColors = this._normalizeRanks(chatColors);
         ranks.forEach(level => {
@@ -85,7 +85,7 @@ define(function (require, exports, module) {
       // plugCubed
       if (_.isObject(css)) {
         if (_.isObject(css.rule)) {
-          this.Style(css.rule);
+          this.createStyle(css.rule);
         }
 
         if (_.isArray(css.import)) {
@@ -103,7 +103,7 @@ define(function (require, exports, module) {
     images() {
       let images = this.ext.roomSettings.get('images');
       if (_.isObject(images)) {
-        let style = this.Style();
+        let style = this.createStyle();
         if (images.background) {
           style.set({
             '.room-background': {
@@ -112,7 +112,7 @@ define(function (require, exports, module) {
           });
         }
         if (images.playback) {
-          let playbackImg = this.$('#playback .background img');
+          let playbackImg = $('#playback .background img');
           this._oldPlayback = playbackImg.attr('src');
           playbackImg.attr('src', images.playback);
         }
@@ -132,7 +132,7 @@ define(function (require, exports, module) {
             .attr('id', 'p3-dj-booth')
             .addClass('extplug-booth')
             .css({ 'background': 'url(' + images.booth + ') no-repeat center center' })
-            .appendTo(this.$('#dj-booth'));
+            .appendTo($('#dj-booth'));
         }
 
         images = this._normalizeRanks(images);
@@ -163,7 +163,7 @@ define(function (require, exports, module) {
         this.$booth = null;
       }
       if (this._oldPlayback) {
-        this.$('#playback .background img').attr('src', this._oldPlayback);
+        $('#playback .background img').attr('src', this._oldPlayback);
         delete this._oldPlayback;
       }
       if (this._imports) {
