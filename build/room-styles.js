@@ -24,7 +24,6 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
       this._super();
       this.all();
 
-      //      this.ext.roomSettings.on('change', this.reload);
       this.ext.roomSettings.on('change:images', this.images, this);
       this.ext.roomSettings.on('change:ccc change:colors', this.colors, this);
       this.ext.roomSettings.on('change:css', this.css, this);
@@ -33,7 +32,7 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
     disable: function disable() {
       this._super();
       this.unload();
-      //      this.ext.roomSettings.off('change', this.reload);
+
       this.ext.roomSettings.off('change:images', this.images);
       this.ext.roomSettings.off('change:ccc change:colors', this.colors);
       this.ext.roomSettings.off('change:css', this.css);
@@ -78,8 +77,27 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
           if (chatColors[level]) {
             var color = chatColors[level];
             if (color[0] !== '#') color = '#' + color;
-            var value = { color: '' + color + ' !important' };
-            _this._colorStyles.set('.role-' + level + ' .un', value).set('.role-' + level + ' .name', value).set('#user-rollover.role-' + level + ' .role span', value).set('#app .list.staff .group.' + level + ' span', value);
+            var value = { color: '' + color };
+            _this._colorStyles
+            // chat
+            .set('#chat .cm.role-' + level + ' .un', value)
+            // user lists
+            .set('.app-right .user.role-' + level + ' .name', value)
+            // rank name in user rollover
+            .set('#user-rollover.role-' + level + ' .info .role span', value)
+            // staff list headers
+            .set('#app .list.staff .group.' + level + ' span', value)
+            // other places where the role name is followed by the
+            // role icon
+            .set('.icon-chat-' + level + ' + span', value)
+            // generic thing that other plugin devs can use
+            .set('#app .role-' + level + ' .extplug-rank', value);
+
+            // special-case subscribers, because the subscriber text in
+            // user rollovers doesn't have a usable class
+            if (level === 'subscriber') {
+              _this._colorStyles.set('#user-rollover .meta.subscriber .status span', value);
+            }
           }
         });
       }
@@ -110,8 +128,8 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
       }
       // Radiant
       else if (_.isString(css)) {
-        this._imports = $('<style>').text('@import url(' + css + ');').appendTo('head');
-      }
+          this._imports = $('<style>').text('@import url(' + css + ');').appendTo('head');
+        }
     },
 
     images: function images() {
@@ -172,6 +190,11 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
               // class sometimes
               if (rank === 'host' || rank === 'cohost') {
                 selector += ', .role-' + rank + ' .icon-chat-host';
+              }
+              // special-case subscribers, because the subscriber text in
+              // user rollovers doesn't have an icon class
+              if (rank === 'subscriber') {
+                selector += ', #user-rollover .meta.subscriber .status i';
               }
               style.set(selector, { background: 'url(' + url + ')' });
             }
