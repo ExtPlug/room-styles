@@ -89,8 +89,10 @@ define(function (require, exports, module) {
               // other places where the role name is followed by the
               // role icon
               .set(`.icon-chat-${level} + span`, value)
+              // user profile
+              .set(`.role-${level} .user-content.profile .meta .info .role span`, value)
               // generic thing that other plugin devs can use
-              .set(`#app .role-${level} .extplug-rank`, value);
+              .set(`.role-${level} .extplug-rank`, value);
 
             // special-case subscribers, because the subscriber text in
             // user rollovers doesn't have a usable class
