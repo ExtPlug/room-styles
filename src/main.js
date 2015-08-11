@@ -76,12 +76,28 @@ define(function (require, exports, module) {
           if (chatColors[level]) {
             let color = chatColors[level];
             if (color[0] !== '#') color = `#${color}`;
-            let value = { color: `${color} !important` };
+            let value = { color: `${color}` };
             this._colorStyles
-              .set(`.role-${level} .un`, value)
-              .set(`.role-${level} .name`, value)
-              .set(`#user-rollover.role-${level} .role span`, value)
-              .set(`#app .list.staff .group.${level} span`, value);
+              // chat
+              .set(`#chat .cm.role-${level} .un`, value)
+              // user lists
+              .set(`.app-right .user.role-${level} .name`, value)
+              // rank name in user rollover
+              .set(`#user-rollover.role-${level} .info .role span`, value)
+              // staff list headers
+              .set(`#app .list.staff .group.${level} span`, value)
+              // other places where the role name is followed by the
+              // role icon
+              .set(`.icon-chat-${level} + span`, value)
+              // generic thing that other plugin devs can use
+              .set(`#app .role-${level} .extplug-rank`, value);
+
+            // special-case subscribers, because the subscriber text in
+            // user rollovers doesn't have a usable class
+            if (level === 'subscriber') {
+              this._colorStyles
+                .set(`#user-rollover .meta.subscriber .status span`, value);
+            }
           }
         });
       }
@@ -169,11 +185,16 @@ define(function (require, exports, module) {
         ranks.forEach(rank => {
           let url = images[rank] || images.icons && images.icons[rank];
           if (url) {
-            let selector = `.icon.icon-chat-${rank}`
+            let selector = `.icon.icon-chat-${rank}`;
             // special-case cohosts, because they also have the "chat-host" icon
             // class sometimes
             if (rank === 'host' || rank === 'cohost') {
-              selector += `, .role-${rank} .icon-chat-host`
+              selector += `, .role-${rank} .icon-chat-host`;
+            }
+            // special-case subscribers, because the subscriber text in
+            // user rollovers doesn't have an icon class
+            if (rank === 'subscriber') {
+              selector += `, #user-rollover .meta.subscriber .status i`;
             }
             style.set(selector, { background: `url(${url})` });
           }
