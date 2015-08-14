@@ -82,6 +82,7 @@ define(function (require, exports, module) {
               .set(`#chat .cm.role-${level} .un`, value)
               // user lists
               .set(`.app-right .user.role-${level} .name`, value)
+              .set(`.list .user.role-${level} .name`, value)
               // rank name in user rollover
               .set(`#user-rollover.role-${level} .info .role span`, value)
               // staff list headers
