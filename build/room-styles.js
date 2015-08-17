@@ -78,26 +78,30 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
             var color = chatColors[level];
             if (color[0] !== '#') color = '#' + color;
             var value = { color: '' + color };
-            _this._colorStyles
+            var selector = [
             // chat
-            .set('#chat .cm.role-' + level + ' .un', value)
+            '#chat .cm.role-' + level + ' .un',
             // user lists
-            .set('.app-right .user.role-' + level + ' .name', value)
+            '.app-right .user.role-' + level + ' .name', '.list .user.role-' + level + ' .name',
             // rank name in user rollover
-            .set('#user-rollover.role-' + level + ' .info .role span', value)
+            '#user-rollover.role-' + level + ' .info .role span',
             // staff list headers
-            .set('#app .list.staff .group.' + level + ' span', value)
+            '#app .list.staff .group.' + level + ' span',
             // other places where the role name is followed by the
             // role icon
-            .set('.icon-chat-' + level + ' + span', value)
+            '.icon-chat-' + level + ' + span',
+            // user profile
+            '.role-' + level + ' .user-content.profile .meta .info .role span',
             // generic thing that other plugin devs can use
-            .set('#app .role-' + level + ' .extplug-rank', value);
+            '.role-' + level + ' .extplug-rank'];
 
             // special-case subscribers, because the subscriber text in
             // user rollovers doesn't have a usable class
             if (level === 'subscriber') {
-              _this._colorStyles.set('#user-rollover .meta.subscriber .status span', value);
+              selector.push('#user-rollover .meta.subscriber .status span');
             }
+
+            _this._colorStyles.set(selector.join(', '), value);
           }
         });
       }
