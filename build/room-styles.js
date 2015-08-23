@@ -8,7 +8,7 @@ define('extplug/room-styles/main',['require','exports','module','extplug/Plugin'
   var _ = require('underscore');
   var $ = require('jquery');
 
-  var ranks = ['subscriber', 'host', 'cohost', 'manager', 'bouncer', 'dj', 'admin', 'ambassador'];
+  var ranks = ['user', 'friend', 'subscriber', 'host', 'cohost', 'manager', 'bouncer', 'dj', 'admin', 'ambassador'];
 
   var RoomStyles = Plugin.extend({
     name: 'Room Styles',
