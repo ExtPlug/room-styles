@@ -6,7 +6,8 @@ define(function (require, exports, module) {
   const _ = require('underscore');
   const $ = require('jquery');
 
-  const ranks = [ 'subscriber',
+  const ranks = [ 'user', 'friend',
+                  'subscriber',
                   'host', 'cohost', 'manager', 'bouncer', 'dj',
                   'admin', 'ambassador' ];
 
