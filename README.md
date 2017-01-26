@@ -1,6 +1,8 @@
 Room Styles
 ===========
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/extplug/room-styles.svg)](https://greenkeeper.io/)
+
 ExtPlug plugin that allows room owners to create their own custom room styles.
 It supports both the [plug³](https://github.com/plugCubed/plugCubed/wiki/Room-Settings)
 and [RCS](https://rcs.radiant.dj/ccs) room style formats.
