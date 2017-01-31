@@ -1,6 +1,6 @@
 {
   "name": "extplug-room-styles",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "license": "MIT",
   "description": "ExtPlug plugin that allows room hosts to define their own custom room CSS styles.",
   "author": "ReAnna <renee@kooi.me>",
